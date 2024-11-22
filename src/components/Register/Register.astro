@@ -1,45 +1,107 @@
 ---
-const errors = {
+import type { Response } from '@/type/register';
+import { apiClient } from '../../helper/hookfetch';
+
+interface Errors {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  term: string;
+  role: string;
+  first_name: string;
+  last_name: string;
+  general?: string; // Optional global error message
+}
+
+const errors: Errors = {
   username: '',
   email: '',
   password: '',
   confirmPassword: '',
   term: '',
+  role: '',
+  first_name: '',
+  last_name: '',
+  general: '', // Optional global error message
 };
+
 if (Astro.request.method === 'POST') {
   try {
     const data = await Astro.request.formData();
-    const name = data.get('username');
+    const username = data.get('username');
     const email = data.get('email');
     const password = data.get('password');
     const confirmPassword = data.get('confirmPassword');
+    const role = data.get('role'); // Capture the role
     const term = data.get('term');
+    const firstName = data.get('first_name'); // Capture first name
+    const lastName = data.get('last_name'); // Capture last name
+
+    // Input validation
     if (
       typeof email !== 'string' ||
       !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
     ) {
       errors.email = 'Please enter a valid email address.';
     }
-    if (typeof name !== 'string' || name.length < 1) {
-      errors.username += 'Please enter a username. ';
+    if (typeof username !== 'string' || username.length < 1) {
+      errors.username = 'Please enter a username.';
     }
     if (typeof password !== 'string' || password.length < 6) {
-      errors.password += 'Password must be at least 6 characters. ';
+      errors.password = 'Password must be at least 6 characters.';
     }
     if (typeof confirmPassword !== 'string' || confirmPassword !== password) {
-      errors.confirmPassword += 'Password Tidak Sesuai. ';
+      errors.confirmPassword = 'Passwords do not match.';
     }
     if (typeof term !== 'string' || term !== 'accepted') {
-      errors.term += 'Please,accept our terms';
+      errors.term = 'Please accept the terms.';
     }
-    // const hasErrors = Object.values(errors).some((msg) => msg);
-    // // if (!hasErrors) {
-    // //   await registerUser({name, email, password});
-    // //   return Astro.redirect("/login");
-    // // }
+    if (typeof role !== 'string' || !['user', 'admin'].includes(role)) {
+      errors.role = 'Please select a valid role.';
+    }
+    if (typeof firstName !== 'string' || firstName.length < 1) {
+      errors.first_name = 'Please enter a first name.';
+    }
+    if (typeof lastName !== 'string' || lastName.length < 1) {
+      errors.last_name = 'Please enter a last name.';
+    }
+
+    // If there are errors, return the error object
+    if (Object.values(errors).some((error) => error !== '')) {
+      return { errors };
+    }
+
+    const body = {
+      email,
+      password,
+      password_confirmation: confirmPassword,
+      first_name: firstName,
+      last_name: lastName,
+      role: role,
+    };
+
+    console.log(body);
+
+    // const response = await apiClient.post<Response>(
+    //   'https://aurum.epa.my.id/api/register',
+    //   body,
+    //   { 'Content-Type': 'application/json' }
+    // );
+
+    // console.log(response);
+    // if (response.error) {
+    //   console.error('Error:', response.error);
+    //   errors.general = response.error; // Set global error message
+    // } else {
+    //   console.log('Data:', response.data);
+    //   return { data: 'Form submitted successfully!' }; // Handle success
+    // }
   } catch (error) {
     if (error instanceof Error) {
       console.error(error.message);
+      errors.general = error.message; // Set global error message
+      return { errors }; // Return updated errors for front-end handling
     }
   }
 }
@@ -58,6 +120,7 @@ if (Astro.request.method === 'POST') {
         class="flex flex-col w-full justify-start items-start gap-5"
         method="POST"
       >
+        <!-- Username -->
         <label class="flex gap-3 flex-col w-full">
           Username:
           <input
@@ -67,6 +130,32 @@ if (Astro.request.method === 'POST') {
           />
         </label>
         {errors.username && <p>{errors.username}</p>}
+
+        <!-- First Name -->
+        <label class="flex gap-3 flex-col w-full">
+          First Name:
+          <input
+            class="w-full p-1 border-black border rounded"
+            type="text"
+            name="first_name"
+            required
+          />
+        </label>
+        {errors.first_name && <p>{errors.first_name}</p>}
+
+        <!-- Last Name -->
+        <label class="flex gap-3 flex-col w-full">
+          Last Name:
+          <input
+            class="w-full p-1 border-black border rounded"
+            type="text"
+            name="last_name"
+            required
+          />
+        </label>
+        {errors.last_name && <p>{errors.last_name}</p>}
+
+        <!-- Email -->
         <label class="flex gap-3 flex-col w-full">
           Email:
           <input
@@ -77,6 +166,8 @@ if (Astro.request.method === 'POST') {
           />
         </label>
         {errors.email && <p>{errors.email}</p>}
+
+        <!-- Password -->
         <label class="flex gap-3 flex-col w-full">
           Password:
           <input
@@ -87,26 +178,46 @@ if (Astro.request.method === 'POST') {
             minlength="6"
           />
         </label>
+
+        <!-- Confirm Password -->
         <label class="flex flex-col gap-3 w-full">
           Confirm Password:
           <input
             class="w-full p-1 border-black border rounded"
             type="password"
-            name="Confirmpassword"
+            name="confirmPassword"
             required
             minlength="6"
           />
         </label>
-        {errors.password && <p>{errors.password}</p>}
+        {errors.confirmPassword && <p>{errors.confirmPassword}</p>}
+
+        <!-- Role -->
+        <label class="flex gap-3 flex-col w-full">
+          Role:
+          <select
+            class="w-full p-1 border-black border rounded"
+            name="role"
+            required
+          >
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </label>
+        {errors.role && <p>{errors.role}</p>}
+
+        <!-- Terms -->
         <div class="flex flex-row gap-3 justify-center items-center">
           <input type="checkbox" name="term" value="accepted" />
           <div>check to accept our terms</div>
         </div>
         {errors.term && <p>{errors.term}</p>}
+
+        <!-- Submit Button -->
         <div
           class="flex bg-slate-200 py-2 rounded justify-center items-center w-full"
         >
-          <button>Register</button>
+          <button type="submit">Register</button>
         </div>
       </form>
       <div class="flex justify-center items-center w-full flex-col gap-5">

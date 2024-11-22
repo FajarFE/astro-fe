@@ -1,6 +1,7 @@
 ---
 const errors = {
   generate: '',
+<<<<<<< HEAD
 };
 
 if (Astro.request.method === 'POST') {
@@ -21,11 +22,35 @@ if (Astro.request.method === 'POST') {
   } catch (error) {
     if (error instanceof Error) {
       console.error('Error during form submission:', error.message);
+=======
+
+};
+if (Astro.request.method === 'POST') {
+  try {
+    const data = await Astro.request.formData();
+    const generate = data.get('username');
+    
+    if (
+      typeof generate !== 'string' ||
+      !generate.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
+    ){
+        
+    }
+    // const hasErrors = Object.values(errors).some((msg) => msg);
+    // // if (!hasErrors) {
+    // //   await registerUser({name, email, password});
+    // //   return Astro.redirect("/login");
+    // // }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error.message);
+>>>>>>> 9da3b1f (add generate ai input)
     }
   }
 }
 ---
 
+<<<<<<< HEAD
 <main class="w-full container mx-auto h-screen">
   <main class="w-full flex h-full flex-col justify-center items-center">
     <form
@@ -57,3 +82,28 @@ if (Astro.request.method === 'POST') {
     </form>
   </main>
 </main>
+=======
+<main class="grid grid-cols-12 container mx-auto h-svh p-5">
+  <div
+    class="col-span-6 h-full flex flex-col w-full justify-around items-center"
+  >
+    <div class="w-[50%] flex flex-col justify-around h-full">
+      <h1>Register</h1>
+      <form
+        class="flex flex-col w-full justify-start items-start gap-5"
+        method="POST"
+      >
+        <label class="flex gap-3 flex-col w-full">
+          Username:
+          <input
+            class="w-full p-1 border-black border rounded"
+            type="text"
+            name="username"
+          />
+        </label>
+      </form>
+    
+    </div>
+  </div>
+</main>
+>>>>>>> 9da3b1f (add generate ai input)

@@ -1,4 +1,4 @@
-type FetchResponse<T> = {
+export type FetchResponse<T> = {
   data: T | null;
   error: string | null;
 };
@@ -8,16 +8,24 @@ export const apiClient = {
     method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     url: string,
     body?: any,
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
+    contentType:
+      | 'application/json'
+      | 'application/x-www-form-urlencoded'
+      | 'multipart/form-data' = 'application/json'
   ): Promise<FetchResponse<T>> {
     try {
       const options: RequestInit = {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': contentType,
           ...headers,
         },
-        body: body ? JSON.stringify(body) : undefined,
+        body: body
+          ? contentType === 'application/json'
+            ? JSON.stringify(body)
+            : body
+          : undefined,
       };
 
       const response = await fetch(url, options);
@@ -37,12 +45,28 @@ export const apiClient = {
     return this.request<T>('GET', url, undefined, headers);
   },
 
-  async post<T>(url: string, body: any, headers?: Record<string, string>) {
-    return this.request<T>('POST', url, body, headers);
+  async post<T>(
+    url: string,
+    body: any,
+    headers?: Record<string, string>,
+    contentType:
+      | 'application/json'
+      | 'application/x-www-form-urlencoded'
+      | 'multipart/form-data' = 'application/json'
+  ) {
+    return this.request<T>('POST', url, body, headers, contentType);
   },
 
-  async put<T>(url: string, body: any, headers?: Record<string, string>) {
-    return this.request<T>('PUT', url, body, headers);
+  async put<T>(
+    url: string,
+    body: any,
+    headers?: Record<string, string>,
+    contentType:
+      | 'application/json'
+      | 'application/x-www-form-urlencoded'
+      | 'multipart/form-data' = 'application/json'
+  ) {
+    return this.request<T>('PUT', url, body, headers, contentType);
   },
 
   async delete<T>(url: string, headers?: Record<string, string>) {
