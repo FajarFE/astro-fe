@@ -3,13 +3,10 @@ interface Props {
   title: string;
 }
 
+import '@/styles/globals.css';
 import Menu from '@/components/Menu/Menu.astro';
 
-const dataMenu = [
-  { name: 'About Us', link: '/about' },
-  { name: 'Services', link: '/services' },
-  { name: 'Contact', link: '/contact' },
-];
+const dataMenu = [{ name: 'Project List', link: '/project-list' }];
 const { title } = Astro.props;
 ---
 
@@ -24,7 +21,7 @@ const { title } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
-    <Menu nameCompany="My Company" data={dataMenu} />
+
     <slot />
   </body>
 </html>

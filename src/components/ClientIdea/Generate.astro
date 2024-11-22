@@ -1,0 +1,59 @@
+---
+const errors = {
+  generate: '',
+};
+
+if (Astro.request.method === 'POST') {
+  try {
+    // Ambil data dari form
+    const data = await Astro.request.formData();
+    const generate = data.get('generate');
+
+    // Validasi data input (opsional, aktifkan jika diperlukan)
+    if (typeof generate !== 'string' || generate.trim().length < 200) {
+      errors.generate = 'Isi minimal 200 huruf!';
+    }
+
+    const hasErrors = Object.values(errors).some((msg) => msg);
+    if (!hasErrors) {
+      return Astro.redirect('/result');
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Error during form submission:', error.message);
+    }
+  }
+}
+---
+
+<main class="w-full container mx-auto h-screen">
+  <main class="w-full flex h-full flex-col justify-center items-center">
+    <form
+      class="flex flex-col w-full justify-center items-center gap-5"
+      method="POST"
+    >
+      <label class="flex gap-14 justify-center items-center flex-col w-full">
+        <div class="text-[50px] font-bold">Generate AI Idea</div>
+        <div
+          class="w-full h-20 relative rounded-full shadow-2xl flex justify-end items-center"
+        >
+          <textarea
+            placeholder="Isi minimal 200 huruf"
+            class="px-10 py-3 w-full h-full placeholder:p-20 felx focus:outline-none border-black border-2 rounded-full"
+            name="username"
+            style="resize:none;overflow:hidden"></textarea>
+          <button
+            class="absolute bg-blue-200 right-3 shadow-lg font-semibold py-4 px-5 rounded-full"
+          >
+            Generate AI
+          </button>
+        </div>
+      </label>
+      {
+        errors.generate && (
+          <div class="text-red-500 text-sm mt-2">{errors.generate}</div>
+        )
+      }
+    </form>
+  </main>
+</main>

@@ -1,4 +1,6 @@
 ---
+import { NavigationDrawer } from '../NavigationDrawer';
+
 interface DataMenu {
   name: string;
   link: string;
@@ -16,13 +18,17 @@ const { data, nameCompany, logo, className } = Astro.props;
 
 <main class=`${className} text-sm bg-slate-200`>
   <div
-    class="flex py-4 flex-row mx-auto container gap-5 justify-around items-center"
+    class="flex px-2 py-4 flex-row mx-auto container gap-5 justify-between items-center"
   >
+    <div class="block sm:hidden">
+      <NavigationDrawer dataMenu={data} client:load />
+    </div>
     <div class="flex flex-row gap-5 justify-center items-center">
-      <div>{nameCompany}</div>
+      <div class="font-bold text-lg tracking-wider">{nameCompany}</div>
       {logo && <img src={logo} alt={nameCompany} />}
     </div>
-    <div class="flex flex-row gap-5 justify-stretch items-center">
+    <div class="w-[50px] sm:hidden"></div>
+    <div class="hidden md:flex flex-row gap-5 justify-stretch items-center">
       {
         data.map((menu) => (
           <a class="text-black" href={menu.link}>
@@ -31,7 +37,7 @@ const { data, nameCompany, logo, className } = Astro.props;
         ))
       }
     </div>
-    <div class="gap-5 flex flex-row">
+    <div class="gap-5 hidden md:flex flex-row">
       <button
         class="bg-slate-400 shadow-md px-4 py-2 text-sm font-semibold text-white rounded"
         >Register</button

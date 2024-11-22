@@ -1,0 +1,340 @@
+---
+const errors = {
+  scope: '',
+  totalBudget: '',
+  name: '',
+  category: '',
+  status: '',
+  freelance: {
+    nameFreelance: '',
+    bidang: '',
+    level: '',
+    budget: '',
+  },
+};
+
+let freelanceData = [];
+
+interface freelance {
+  nameFreelance: string;
+  bidang: string;
+  level: string;
+  budget: number;
+}
+
+if (Astro.request.method === 'POST') {
+  try {
+    const data = await Astro.request.formData();
+
+    // Retrieve form data, ensuring proper type handling
+    const scope = data.get('scope');
+    const name = data.get('name');
+    const totalBudget = data.get('totalBudget');
+    const category = data.get('category');
+    const status = data.get('status');
+
+    // Type guards to ensure correct types are retrieved
+    const scopeString = typeof scope === 'string' ? scope : '';
+    const nameString = typeof name === 'string' ? name : '';
+    const categoryString = typeof category === 'string' ? category : '';
+    const statusString = typeof status === 'string' ? status : '';
+    const totalBudgetNumber =
+      typeof totalBudget === 'string' ? parseFloat(totalBudget) : NaN;
+
+    // Parse freelance data and ensure it's an array
+    const freelanceDataString = data.get('freelanceData');
+    let freelanceData: freelance[] = [];
+
+    // Ensure 'freelanceData' is a string before parsing
+    if (typeof freelanceDataString === 'string') {
+      freelanceData = JSON.parse(freelanceDataString || '[]');
+    } else {
+      // Handle the case where freelanceData is not a string
+      console.error(
+        'Expected freelanceData to be a string, but received:',
+        freelanceDataString
+      );
+    }
+
+    // Validate data
+    const errors = {
+      scope: !scopeString ? 'Scope is required' : '',
+      totalBudget:
+        isNaN(totalBudgetNumber) || totalBudgetNumber <= 0
+          ? 'Total budget must be a valid number and greater than 0'
+          : '',
+      name: !nameString ? 'Name is required' : '',
+      category: !categoryString ? 'Category is required' : '',
+      freelance: freelanceData.map((freelance: freelance, index: number) => ({
+        nameFreelance: !freelance.nameFreelance
+          ? `Name Freelance ${index + 1} is required`
+          : '',
+        bidang: !freelance.bidang
+          ? `Bidang Freelance ${index + 1} is required`
+          : '',
+        level:
+          !freelance.level || freelance.level.length < 6
+            ? `Level Freelance ${index + 1} must be at least 6 characters long`
+            : '',
+        budget:
+          isNaN(freelance.budget) || freelance.budget <= 0
+            ? `Budget Freelance ${index + 1} must be a valid number and greater than 0`
+            : '',
+      })),
+    };
+
+    // Check if there are any errors
+    const hasErrors = Object.values(errors).some(
+      (msg) =>
+        (typeof msg === 'string' && msg) ||
+        (Array.isArray(msg) &&
+          msg.some((subMsg) => Object.values(subMsg).some((m) => m)))
+    );
+
+    if (!hasErrors) {
+      // No errors, continue with backend processing
+
+      // For example, send the data to the backend or database here
+
+      // Redirect after success
+      return Astro.redirect('/success');
+    } else {
+      // Handle form validation errors here (e.g., display error messages)
+      console.error(errors);
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error.message);
+    }
+  }
+}
+---
+
+<main class="w-full h-auto container mx-auto">
+  <div class="w-full flex flex-col justify-around h-full">
+    <form
+      class="flex flex-col w-full justify-start items-start gap-12"
+      method="POST"
+    >
+      <!-- Project Section -->
+      <div class="bg-slate-200 w-full p-10">
+        <label class="flex gap-3 flex-col w-full">
+          Name Project:
+          <input class="w-full p-1 rounded" type="text" name="name" required />
+        </label>
+        <label>
+          Scope Project:
+          <input class="w-full p-1 rounded" type="text" name="scope" required />
+        </label>
+        <label class="flex gap-3 flex-col w-full">
+          Category Project:
+          <input
+            class="w-full p-1 rounded"
+            type="text"
+            name="category"
+            required
+          />
+        </label>
+        <label class="flex gap-3 flex-col w-full">
+          Total Budget:
+          <input
+            class="w-full p-1 rounded"
+            type="text"
+            name="category"
+            required
+          />
+        </label>
+        <label class="flex gap-3 flex-col w-full">
+          Status:
+          <select class="bg-white p-2 rounded" id="status" name="status">
+            <option value="volvo">Donasi</option>
+            <option value="saab">Invest</option>
+          </select>
+        </label>
+      </div>
+      <!-- Freelance Section -->
+      <button
+        type="button"
+        class="p-2 bg-blue-500 text-white rounded"
+        id="addFreelanceButton"
+      >
+        Add Freelance
+      </button>
+      <div id="freelance-section" class="flex flex-col gap-5 w-full rounded">
+      </div>
+
+      <input type="hidden" name="freelanceData" id="freelanceData" />
+
+      <button
+        type="submit"
+        class="p-2 bg-green-500 text-white rounded"
+        onclick="prepareFreelanceData()"
+      >
+        Submit
+      </button>
+    </form>
+  </div>
+</main>
+
+<script>
+  // Data Freelance
+  interface FreelanceArray {
+    nameFreelance: string;
+    bidang: string;
+    level: string;
+    budget: number;
+  }
+
+  let freelanceArray: FreelanceArray[] = [
+    {
+      nameFreelance: 'John Doe',
+      bidang: 'Web Development',
+      level: 'Senior',
+      budget: 5000,
+    },
+  ];
+
+  function renderFreelanceArray() {
+    const freelanceSection = document.getElementById('freelance-section');
+
+    // Pastikan elemen ditemukan sebelum melanjutkan
+    if (freelanceSection) {
+      freelanceSection.innerHTML = ''; // Kosongkan bagian sebelumnya
+      freelanceArray.forEach((freelance, index) => {
+        const freelanceItem = document.createElement('div');
+        freelanceItem.className =
+          'flex flex-col gap-4 p-10 bg-slate-200 border rounded';
+        freelanceItem.innerHTML = `
+        <label>
+          Name Freelance:
+          <input
+            class="w-full p-1 rounded"
+            type="text"
+            value="${freelance.nameFreelance}"
+            oninput="updateFreelance(${index}, 'nameFreelance', this.value)"
+          />
+        </label>
+        <label>
+          Bidang Yang Dicari:
+          <input
+            class="w-full p-1 rounded"
+            type="text"
+            value="${freelance.bidang}"
+            oninput="updateFreelance(${index}, 'bidang', this.value)"
+          />
+        </label>
+        <label>
+          Level:
+          <input
+            class="w-full p-1 rounded"
+            type="text"
+            value="${freelance.level}"
+            oninput="updateFreelance(${index}, 'level', this.value)"
+          />
+        </label>
+        <label>
+          Budget:
+          <input
+            class="w-full p-1 rounded"
+            type="number"
+            value="${freelance.budget}"
+            oninput="updateFreelance(${index}, 'budget', parseFloat(this.value))"
+          />
+        </label>
+        <button
+          type="button"
+          class="p-2 bg-red-500 text-white rounded"
+          id="deleteFreelanceButton-${index}" 
+        >
+          Delete
+        </button>
+      `;
+        freelanceSection.appendChild(freelanceItem);
+
+        // Pasang event listener untuk tombol "Delete"
+        const deleteButton = document.getElementById(
+          `deleteFreelanceButton-${index}`
+        );
+        if (deleteButton) {
+          deleteButton.addEventListener('click', function () {
+            deleteFreelance(index);
+          });
+        }
+      });
+    }
+  }
+
+  function deleteFreelance(index: number) {
+    // Remove the freelance at the specified index
+    freelanceArray.splice(index, 1);
+
+    // Re-render the freelance list
+    renderFreelanceArray();
+  }
+  function updateFreelance(
+    index: number,
+    field: keyof FreelanceArray, // field must be a key of Freelance
+    value: string | number // value can be a string or number
+  ) {
+    // Handle 'budget' field as a number
+    if (field === 'budget' && typeof value === 'string') {
+      value = parseFloat(value); // Ensure budget is treated as a number
+    }
+
+    // Ensure the value matches the expected type for the given field
+    const currentValue = freelanceArray[index][field];
+
+    if (typeof currentValue !== typeof value) {
+      throw new TypeError(
+        `Expected value of type ${typeof currentValue} for field ${field}, received ${typeof value}`
+      );
+    }
+
+    // Update the field value with the correct type
+    if (field === 'budget') {
+      // Specifically update the budget field with a number type
+      freelanceArray[index][field] = value as number;
+    } else {
+      // Update other fields as strings
+      freelanceArray[index][field] = value as string;
+    }
+
+    // Re-render the updated freelance array
+    renderFreelanceArray();
+  }
+
+  // Menambahkan Freelance Baru
+  function addFreelance() {
+    const index = freelanceArray.length;
+    freelanceArray.push({
+      nameFreelance: '',
+      bidang: '',
+      level: '',
+      budget: 0,
+    });
+    renderFreelanceArray(); // Render ulang setelah menambahkan freelance baru
+  }
+
+  // Menyimpan Data Freelance ke Input Tersembunyi
+  function prepareFreelanceData(): void {
+    const freelanceDataInput = document.getElementById(
+      'freelanceData'
+    ) as HTMLInputElement;
+
+    if (freelanceDataInput) {
+      // Pastikan elemen ada
+      freelanceDataInput.value = JSON.stringify(freelanceArray);
+    } else {
+      console.error('freelanceDataInput not found');
+    }
+  }
+
+  // Menambahkan Event Listener untuk tombol "Add Freelance"
+  document.addEventListener('DOMContentLoaded', function () {
+    const addFreelanceButton = document.getElementById('addFreelanceButton');
+    if (addFreelanceButton) {
+      addFreelanceButton.addEventListener('click', addFreelance);
+    }
+    renderFreelanceArray(); // Render data awal ketika DOM siap
+  });
+</script>

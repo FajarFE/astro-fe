@@ -1,0 +1,58 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Progress } from '@/components/ui/progress';
+import ProjectPagination from '@/components/ProjectPagination.astro';
+import { SearchForm } from '@/components/ui/search-form';
+import ProjectCard from '@/components/ProjectCard.astro';
+---
+
+<Layout title="Project List">
+  <!-- Search box -->
+  <div
+    class="w-full max-w-sm flex pt-8 mx-auto md:container flex-col items-center"
+  >
+    <div class="w-full sm:w-full md:w-[50%]">
+      <SearchForm />
+    </div>
+  </div>
+  <!-- Search box -->
+  <!-- Grid layout -->
+  <div
+    class="py-4 mx-auto max-w-sm md:container grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+  >
+    <!-- Card 1 -->
+    <ProjectCard
+      progressValue={33}
+      collectedAmount="Rp157.058.000"
+      projectTitle="Judul Project 1"
+      businessOwnerName="Nama Business Creator"
+      imagePlaceholder="https://placehold.co/500x281"
+    />
+    <!--/ Card 1 -->
+    <!-- Card 2 -->
+    <ProjectCard
+      progressValue={50}
+      collectedAmount="Rp250.000.000"
+      projectTitle="Judul Project 2"
+      businessOwnerName="Nama Business Creator"
+      imagePlaceholder="https://placehold.co/500x281"
+    />
+    <!--/ Card 2 -->
+    <!-- Card 3 -->
+    <ProjectCard
+      progressValue={75}
+      collectedAmount="Rp375.000.000"
+      projectTitle="Judul Project 1"
+      businessOwnerName="Nama Business Creator"
+      imagePlaceholder="https://placehold.co/500x281"
+    />
+    <!--/ Card 3 -->
+  </div>
+  <!--/ Grid layout -->
+  <!-- Pagination -->
+  <div class="mb-10">
+    <ProjectPagination />
+  </div>
+  <!--/ Pagination -->
+</Layout>
